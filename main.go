@@ -44,6 +44,7 @@ func main() {
 	// registier the commands
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
+	cmds.register("reset", handlerReset)
 
 	// get the args and make the command struct
 	if len(os.Args) < 2 {
