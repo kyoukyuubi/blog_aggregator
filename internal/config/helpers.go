@@ -22,11 +22,16 @@ func write(cfg Config) error {
 		return err
 	}
 
-	data, err := json.Marshal(cfg)
+	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
-	os.WriteFile(path, data, 0644)
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(cfg)
+	if err != nil {
+		return err
+	}
 	return nil
 }
