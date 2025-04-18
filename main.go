@@ -1,18 +1,21 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/kyoukyuubi/blog_aggregator/internal/config"
 )
 
+type state struct {
+	config *config.Config
+}
+
 func main() {
 	// read the config and handle errors
 	cfg, err := config.Read()
 	if err != nil {
-		log.Fatalf("Error loading config: %v\n", err)
+		log.Fatalf("Error loading config: %v", err)
 	}
 
 	// make the state struct
@@ -30,17 +33,15 @@ func main() {
 
 	// get the args and make the command struct
 	if len(os.Args) < 2 {
-		fmt.Println("Error: Not enough arguments provided")
+		log.Fatal("Usage: cli <command> [args...]")
 		os.Exit(1)
 	}
 
-	cmd := command {
-		name: os.Args[1],
-		args: os.Args[2:],
-	}
+	cmdName := os.Args[1]
+	cmdArgs := os.Args[2:]
 
 	// run the commands inputted
-	err = cmds.run(appState, cmd)
+	err = cmds.run(appState, command{name: cmdName, args: cmdArgs})
 	if err != nil {
 		log.Fatalf("Error: %v\n", err)
 	}

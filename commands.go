@@ -1,6 +1,7 @@
 package main
 
-import "fmt"
+import "errors"
+
 
 type command struct {
 	name string
@@ -16,15 +17,9 @@ func (c *commands) register(name string, f func(*state, command) error) {
 }
 
 func (c *commands) run(s *state, cmd command) error {
-	function, exists := c.handlers[cmd.name]
-	if !exists {
-		return fmt.Errorf("command doesn't exsist, please check the spelling and try again")
+	function, ok := c.handlers[cmd.name]
+	if !ok {
+		return errors.New("command not found")
 	}
-
-	fmt.Printf("Running command: '%s'\n", cmd.name)
-	err := function(s, cmd)
-	if err != nil {
-		return err
-	}
-	return nil
+	return function(s, cmd)
 }
