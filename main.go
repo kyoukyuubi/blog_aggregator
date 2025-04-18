@@ -1,13 +1,17 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 
 	"github.com/kyoukyuubi/blog_aggregator/internal/config"
+	"github.com/kyoukyuubi/blog_aggregator/internal/database"
+	_ "github.com/lib/pq"
 )
 
 type state struct {
+	db  *database.Queries
 	config *config.Config
 }
 
@@ -18,8 +22,17 @@ func main() {
 		log.Fatalf("Error loading config: %v", err)
 	}
 
-	// make the state struct
+	// connect to the database
+	dbURL := cfg.DBURL
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatalf("Error connection to db: %v", err)
+	}
+	dbQueries := database.New(db)
+
+	// make the state struct with the config and the db query
 	appState := &state {
+		db: dbQueries,
 		config: &cfg,
 	}
 
@@ -28,8 +41,9 @@ func main() {
 		handlers: make(map[string]func(*state, command) error),
 	}
 
-	// registier the login command
+	// registier the commands
 	cmds.register("login", handlerLogin)
+	cmds.register("register", handlerRegister)
 
 	// get the args and make the command struct
 	if len(os.Args) < 2 {
