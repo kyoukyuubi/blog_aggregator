@@ -46,6 +46,7 @@ func main() {
 	cmds.register("register", handlerRegister)
 	cmds.register("users", handerUsers)
 	cmds.register("agg", handlerAgg)
+	cmds.register("addfeed", handlerAddFeed)
 	cmds.register("reset", handlerReset)
 
 	// get the args and make the command struct
