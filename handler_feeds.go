@@ -40,6 +40,45 @@ func handlerAddFeed(s *state, cmd command) error {
 	}
 
 	// if successful print the feed
-	fmt.Printf("%v \n", feed)
+	fmt.Println("Feed created successfully:")
+	printFeed(feed, user)
+	fmt.Println()
+	fmt.Println("=====================================")
 	return nil
+}
+
+func handlerGetFeeds(s *state, cmd command) error {
+	// get all the feeds from the database
+	feeds, err := s.db.GetFeeds(context.Background())
+	if err != nil {
+		return fmt.Errorf("error getting feeds: %v", err)
+	}
+
+	if len(feeds) == 0 {
+		fmt.Println("No feeds in database!")
+		return nil
+	}
+
+	// loop through feeds getting the user names per print
+	fmt.Printf("Found %d feeds:\n", len(feeds))
+	for _, feed := range feeds {
+		name, err := s.db.GetUserNameFromUUID(context.Background(), feed.UserID)
+		if err != nil {
+			return fmt.Errorf("error getting user: %v", err)
+		}
+		fmt.Printf("RSS: %s\n", feed.Name)
+		fmt.Printf("URL: %s\n", feed.Url)
+		fmt.Printf("Added by: %s\n", name)
+		fmt.Println("=====================================")
+	}
+	return nil
+}
+
+func printFeed(feed database.Feed, user database.User) {
+	fmt.Printf("* ID:            %s\n", feed.ID)
+	fmt.Printf("* Created:       %v\n", feed.CreatedAt)
+	fmt.Printf("* Updated:       %v\n", feed.UpdatedAt)
+	fmt.Printf("* Name:          %s\n", feed.Name)
+	fmt.Printf("* URL:           %s\n", feed.Url)
+	fmt.Printf("* User:          %s\n", user.Name)
 }
