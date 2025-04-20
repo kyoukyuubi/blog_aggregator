@@ -51,6 +51,7 @@ func main() {
 	cmds.register("follow", middlewareLoggedIn(handlerFollow))
 	cmds.register("unfollow", middlewareLoggedIn(handlerUnfollow))
 	cmds.register("following", middlewareLoggedIn(handlerFollwing))
+	cmds.register("browse", middlewareLoggedIn(handlerBrowse))
 	cmds.register("reset", handlerReset)
 
 	// get the args and make the command struct
