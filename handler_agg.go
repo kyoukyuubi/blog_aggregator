@@ -13,16 +13,18 @@ import (
 )
 
 func handlerAgg(s *state, cmd command) error {
-	if len(cmd.args) != 1 {
-		return fmt.Errorf("usage: %s <number>h | <number>m | <number>s", cmd.name)
+	if len(cmd.args) < 1 || len(cmd.args) > 2 {
+		return fmt.Errorf("usage: %v <time_between_reqs>", cmd.name)
 	}
 
-	timeBetweenReqs, err := time.ParseDuration(cmd.args[0])
+	timeBetweenRequests, err := time.ParseDuration(cmd.args[0])
 	if err != nil {
-		return fmt.Errorf("error parsing duration: %v", err)
+		return fmt.Errorf("invalid duration: %w", err)
 	}
 
-	ticker := time.NewTicker(timeBetweenReqs)
+	log.Printf("Collecting feeds every %s...", timeBetweenRequests)
+
+	ticker := time.NewTicker(timeBetweenRequests)
 	defer ticker.Stop()
 
 	for {
@@ -59,44 +61,25 @@ func scrapeFeeds(s *state) error {
 
 	log.Printf("Feed %s collected, %v posts found", rss.Channel.Title, len(rss.Channel.Item))
 	for _, rssFeed := range rss.Channel.Item {
-		var convertedTime time.Time
-		var err error
-
-	    formats := []string{
-			time.RFC1123Z,
-			time.RFC1123,
-			time.RFC822Z,
-			time.RFC822,
-			"2006-01-02T15:04:05Z07:00",
-			"2006-01-02 15:04:05.999999",
-		}
-
-		for _, format := range formats {
-			convertedTime, err = time.Parse(format, rssFeed.PubDate)
-			if err == nil {
-				break
+		publishedAt := sql.NullTime{}
+		if t, err := time.Parse(time.RFC1123Z, rssFeed.PubDate); err == nil {
+			publishedAt = sql.NullTime{
+				Time: t,
+				Valid: true,
 			}
-		}
-
-		if err != nil {
-			log.Printf("Could not parse date: %s, using current time", rssFeed.PubDate)
-			convertedTime = time.Now()
 		}
 
 		_, err = s.db.CreatePost(context.Background(), database.CreatePostParams{
 			ID: uuid.New(),
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
-			Title: sql.NullString{
-				String: rssFeed.Title,
-				Valid: true,
-			},
+			Title: rssFeed.Title,
 			Url: rssFeed.Link,
 			Description: sql.NullString{
 				String: rssFeed.Description,
 				Valid: true,
 			},
-			PublishedAt: convertedTime,
+			PublishedAt: publishedAt,
 			FeedID: feedID,
 		})
 		if err != nil {

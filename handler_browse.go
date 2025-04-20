@@ -25,21 +25,20 @@ func handlerBrowse(s *state, cmd command, user database.User) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("error getting posts: %v", err)
+		return fmt.Errorf("couldn't get posts for user: %w", err)
 	}
 
 	if len(posts) == 0 {
-		fmt.Println("Posts are empty!")
+		fmt.Println("No posts in database!")
 		return nil
 	}
 
 	for _, post := range posts {
-		fmt.Printf("%s\n", post.Title.String)
+		fmt.Printf("%s from %s\n", post.PublishedAt.Time.Format("Mon Jan 2"), post.FeedName)
+		fmt.Printf("--- %s ---\n", post.Title)
+		fmt.Printf("    %v\n", post.Description.String)
 		fmt.Printf("Link: %s\n", post.Url)
-		fmt.Printf("Published: %v\n", post.PublishedAt)
-		fmt.Printf("%s\n", post.Description.String)
-		fmt.Println()
-		fmt.Println("===================================")
+		fmt.Println("=====================================")
 	}
 	return nil
 }
