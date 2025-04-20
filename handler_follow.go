@@ -9,17 +9,13 @@ import (
 	"github.com/kyoukyuubi/blog_aggregator/internal/database"
 )
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	// check if we have the correct amount of args
 	if len(cmd.args) != 1 {
 		return fmt.Errorf("usage: %s <url>", cmd.name)
 	}
 
-	// get user and feed from database
-	user, err := s.db.GetUser(context.Background(), s.config.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error getting user: %v", err)
-	}
+	// get feed from database
 	feed, err := s.db.GetFeedByUrl(context.Background(), cmd.args[0])
 	if err != nil {
 		return fmt.Errorf("error getting feed: %v", err)
@@ -48,13 +44,7 @@ func handlerFollow(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollwing(s *state, cmd command) error {
-	// get the user from database
-	user, err  := s.db.GetUser(context.Background(), s.config.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error getting user %v", err)
-	}
-
+func handlerFollwing(s *state, cmd command, user database.User) error {
 	// store the user id for easier readability
 	userID := user.ID
 

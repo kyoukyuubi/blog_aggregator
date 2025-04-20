@@ -9,7 +9,7 @@ import (
 	"github.com/kyoukyuubi/blog_aggregator/internal/database"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	// check if we have the correct amount of args
 	if len(cmd.args) != 2 {
 		return fmt.Errorf("usage: %s '<name>' '<url>'", cmd.name)
@@ -19,11 +19,7 @@ func handlerAddFeed(s *state, cmd command) error {
 	name := cmd.args[0]
 	url := cmd.args[1] 
 
-	// get user from database and store the id if succesful
-	user, err := s.db.GetUser(context.Background(), s.config.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error getting user: %v", err)
-	}
+	// store the id of the user
 	userUUID := user.ID
 
 	// add the feed to the database, connecting the current user to the db
